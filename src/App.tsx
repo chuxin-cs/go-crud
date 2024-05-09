@@ -1,45 +1,30 @@
-import { useState, useMemo } from "react";
+import {RouterProvider} from 'react-router-dom'
+import router from './router'
+import {ConfigProvider} from 'antd'
+import zhCN from 'antd/locale/zh_CN'
+import {useGlobalStore} from '@/store'
 
-function useBoolean(value: any) {
-  const [state, setState] = useState(value);
-  const actions = useMemo(() => {
-    console.log(111);
-    return {
-      toggle: () => {
-        setState(!state);
-      },
-      set: (v: any) => {
-        setState(v);
-      },
-      setTrue: () => {
-        setState(true);
-      },
-      setFalse: () => {
-        setState(false);
-      },
-    };
-  }, []);
 
-  return [state, actions];
-}
+import dayjs from "dayjs"
+import 'dayjs/locale/zh-cn'
+
+dayjs.locale('zh-cn')
 
 function App() {
-  const [count, setCount] = useState(0);
-  const [state] = useBoolean(true);
-  const [state1] = useBoolean(true);
+    const {primaryColor} = useGlobalStore()
 
-  return (
-    <>
-      <h1>
-        Vite + React {state} = {state1}
-      </h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-      </div>
-    </>
-  );
+    return (
+        <ConfigProvider
+            locale={zhCN}
+            theme={{
+                token: {
+                    colorPrimary: primaryColor,
+                },
+            }}
+        >
+            <RouterProvider router={router}/>
+        </ConfigProvider>
+    );
 }
 
 export default App;
