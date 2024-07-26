@@ -22,6 +22,7 @@ func InitUser(db *gorm.DB) *gin.Engine {
 	return r
 }
 
+// 获取用户
 func getUserList(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var users []entity.User
@@ -39,9 +40,20 @@ func getUserList(db *gorm.DB) gin.HandlerFunc {
 // 删除用户
 func deleteUser(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{
-			"code": 1,
-		})
+		id := c.Param("id")
+		var user entity.User
+		if err := db.First(&user, id).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err := db.Delete(&user).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "用户删除成功!"})
+
 	}
 }
 
@@ -67,8 +79,26 @@ func addUser(db *gorm.DB) gin.HandlerFunc {
 // 更新用户
 func updateUser(db *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
+		id := c.Param("id")
+		var user entity.User
+
+		if err := db.First(&user, id).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err := c.ShouldBindJSON(&user); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+
+		if err := db.Save(&user).Error; err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+			return
+		}
 		c.JSON(http.StatusOK, gin.H{
-			"code": 1,
+			"code": http.StatusOK,
+			"data": user,
 		})
 	}
 }
